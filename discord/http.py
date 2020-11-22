@@ -150,6 +150,7 @@ class HTTPClient:
 
         if self.token is not None:
             headers['Authorization'] = 'Bot ' + self.token if self.bot_token else self.token
+            #print(headers['Authorization'])
         # some checking if it's a JSON request
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
@@ -340,7 +341,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/users/@me/channels'), json=payload)
 
-    def send_message(self, channel_id, content, *, tts=False, embed=None, nonce=None, allowed_mentions=None):
+    def send_message(self, channel_id, content, *, tts=False, embed=None, nonce=None, allowed_mentions=None, message_reference=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {}
 
@@ -359,12 +360,15 @@ class HTTPClient:
         if allowed_mentions:
             payload['allowed_mentions'] = allowed_mentions
 
+        if message_reference:
+            payload['message_reference'] = message_reference
+
         return self.request(r, json=payload)
 
     def send_typing(self, channel_id):
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
-    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None, nonce=None, allowed_mentions=None):
+    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None, nonce=None, allowed_mentions=None, message_reference=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         form = aiohttp.FormData()
 
@@ -377,7 +381,10 @@ class HTTPClient:
             payload['nonce'] = nonce
         if allowed_mentions:
             payload['allowed_mentions'] = allowed_mentions
+        if message_reference:
+            payload['message_reference'] = message_reference
 
+        print("send_files:",payload)
         form.add_field('payload_json', utils.to_json(payload))
         if len(files) == 1:
             file = files[0]

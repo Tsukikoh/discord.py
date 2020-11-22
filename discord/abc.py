@@ -799,7 +799,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
     async def send(self, content=None, *, tts=False, embed=None, file=None,
                                           files=None, delete_after=None, nonce=None,
-                                          allowed_mentions=None):
+                                          allowed_mentions=None, message_reference=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -844,6 +844,13 @@ class Messageable(metaclass=abc.ABCMeta):
             are used instead.
 
             .. versionadded:: 1.4
+        message_reference: :class:`list`
+            Controls the mentions being processed in this message. If this is
+            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
+            The merging behaviour only overrides attributes that have been explicitly passed
+            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
+            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
+            are used instead.
 
         Raises
         --------
@@ -884,7 +891,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
             try:
                 data = await state.http.send_files(channel.id, files=[file], allowed_mentions=allowed_mentions,
-                                                   content=content, tts=tts, embed=embed, nonce=nonce)
+                                                   content=content, tts=tts, embed=embed, nonce=nonce, message_reference=message_reference)
             finally:
                 file.close()
 
@@ -896,13 +903,13 @@ class Messageable(metaclass=abc.ABCMeta):
 
             try:
                 data = await state.http.send_files(channel.id, files=files, content=content, tts=tts,
-                                                   embed=embed, nonce=nonce, allowed_mentions=allowed_mentions)
+                                                   embed=embed, nonce=nonce, allowed_mentions=allowed_mentions, message_reference=message_reference)
             finally:
                 for f in files:
                     f.close()
         else:
             data = await state.http.send_message(channel.id, content, tts=tts, embed=embed,
-                                                                      nonce=nonce, allowed_mentions=allowed_mentions)
+                                                                      nonce=nonce, allowed_mentions=allowed_mentions, message_reference=message_reference)
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
